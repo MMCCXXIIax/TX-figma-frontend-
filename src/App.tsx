@@ -4,7 +4,6 @@ import { Navbar } from './components/layout/Navbar';
 import { DemoModeBanner } from './components/layout/DemoModeBanner';
 import { ScrollToTop } from './components/layout/ScrollToTop';
 import { validateEnvironment } from './lib/env-check';
-import config from './lib/config';
 import { Dashboard } from './pages/Dashboard';
 import { Charts } from './pages/Charts';
 import { PaperTrading } from './pages/PaperTrading';
@@ -65,8 +64,8 @@ export default function App() {
     try {
       await socketManager.connect();
       
-      socketManager.onPatternAlert((alert) => {
-        setAlertCount(prev => prev + 1);
+      socketManager.onPatternAlert(() => {
+        setAlertCount((prev: number) => prev + 1);
       });
 
     } catch (error) {

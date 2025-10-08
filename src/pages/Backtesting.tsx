@@ -10,7 +10,7 @@ import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Play, BarChart3, TrendingUp, TrendingDown, Calendar, DollarSign } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { backtestApi, patternApi } from '../lib/api-client';
 
 interface BacktestResult {

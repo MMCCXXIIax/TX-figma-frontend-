@@ -75,7 +75,7 @@ export const marketApi = {
   // Get current price for a symbol
   getMarketData: (symbol: string) =>
     withFallback(
-      () => apiClient.get(`/api/market/${symbol}`),
+      () => apiClient.get(`/api/market?symbol=${encodeURIComponent(symbol)}`),
       mockMarketData.trending.find(item => item.symbol === symbol) || mockMarketData.trending[0]
     ),
 
@@ -180,14 +180,14 @@ export const sentimentApi = {
   // Get sentiment for a symbol
   getSentiment: (symbol: string) =>
     withFallback(
-      () => apiClient.get(`/api/sentiment/${symbol}`),
+      () => apiClient.get(`/api/sentiment/?symbol=${encodeURIComponent(symbol)}`),
       { ...mockSentiment, symbol }
     ),
 
   // Enhance sentiment confidence
-  enhanceConfidence: () =>
+  enhanceConfidence: (symbol: string, base_confidence: number, pattern_type: string) =>
     withFallback(
-      () => apiClient.post('/api/sentiment/enhance-confidence'),
+      () => apiClient.post('/api/sentiment/enhance-confidence', { symbol, base_confidence, pattern_type }),
       { enhanced: true, confidence_boost: 0.05 }
     ),
 

@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from '../components/ui/alert';
 import { Separator } from '../components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Shield, AlertTriangle, TrendingUp, TrendingDown, DollarSign, Target, Search } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { riskApi } from '../lib/api-client';
 
 interface RiskSettings {

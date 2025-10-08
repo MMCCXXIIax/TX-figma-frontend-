@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from '../components/ui/alert';
 import { Textarea } from '../components/ui/textarea';
 import { Progress } from '../components/ui/progress';
 import { Play, Square, Activity, Clock, AlertTriangle, CheckCircle, Settings } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { scanApi, dataApi } from '../lib/api-client';
 import socketManager, { ScanUpdate } from '../lib/socket';
 

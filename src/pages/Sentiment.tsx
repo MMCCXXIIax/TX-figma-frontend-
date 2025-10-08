@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { Search, TrendingUp, TrendingDown, AlertTriangle, Heart, MessageCircle, BarChart3, Activity } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { sentimentApi, signalsApi } from '../lib/api-client';
 
 interface SentimentData {
@@ -138,7 +138,8 @@ export function Sentiment() {
   const enhanceConfidence = async () => {
     setAnalyzing(true);
     try {
-      const response = await sentimentApi.enhanceConfidence();
+      const baseConfidence = sentimentData?.confidence ?? 0.5;
+      const response = await sentimentApi.enhanceConfidence(symbol, baseConfidence, 'AUTO');
       
       if (response.data.success) {
         toast.success('Sentiment confidence enhanced');

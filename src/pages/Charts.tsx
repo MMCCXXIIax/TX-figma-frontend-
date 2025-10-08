@@ -8,7 +8,7 @@ import { Badge } from '../components/ui/badge';
 import { Separator } from '../components/ui/separator';
 import { CandlestickChart } from '../components/charts/CandlestickChart';
 import { Search, TrendingUp, AlertTriangle, Info } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { marketApi, patternApi } from '../lib/api-client';
 
 interface CandleData {

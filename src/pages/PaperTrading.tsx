@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 import { Progress } from '../components/ui/progress';
 import { DollarSign, TrendingUp, TrendingDown, X, PlusCircle, Activity } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { paperTradingApi, marketApi, analyticsApi } from '../lib/api-client';
 
 interface PaperTrade {
