@@ -13,6 +13,13 @@ export const config = {
   
   // Logging
   enableLogging: import.meta.env?.VITE_ENABLE_LOGGING === 'true' || import.meta.env?.DEV || false,
+
+  // Polling interval (ms)
+  pollIntervalMs: (() => {
+    const raw = (import.meta as any)?.env?.VITE_POLL_INTERVAL_MS as string | undefined;
+    const n = raw ? parseInt(raw, 10) : NaN;
+    return Number.isFinite(n) && n > 0 ? n : 180_000;
+  })(),
 };
 
 // Log configuration in development
@@ -20,6 +27,7 @@ if (config.isDevelopment && config.enableLogging) {
   console.log('🔧 TX Predictive Intelligence Configuration:', {
     apiBaseUrl: config.apiBaseUrl,
     socketBaseUrl: config.socketBaseUrl,
+    pollIntervalMs: config.pollIntervalMs,
     environment: config.isDevelopment ? 'development' : 'production',
   });
 }

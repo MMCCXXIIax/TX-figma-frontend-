@@ -13,6 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { Shield, AlertTriangle, TrendingUp, TrendingDown, DollarSign, Target, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { riskApi } from '../lib/api-client';
+import { usePoll } from '../hooks/usePoll';
+import config from '../lib/config';
 
 interface RiskSettings {
   max_position_size: number;
@@ -86,6 +88,11 @@ export function Risk() {
   useEffect(() => {
     loadRiskSettings();
   }, []);
+
+  // Poll every 180s to refresh risk settings
+  usePoll(() => {
+    loadRiskSettings();
+  }, config.pollIntervalMs, { immediate: false });
 
   const loadRiskSettings = async () => {
     setLoading(true);

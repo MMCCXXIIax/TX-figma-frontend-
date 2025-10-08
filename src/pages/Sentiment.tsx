@@ -10,7 +10,9 @@ import { Alert, AlertDescription } from '../components/ui/alert';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { Search, TrendingUp, TrendingDown, AlertTriangle, Heart, MessageCircle, BarChart3, Activity } from 'lucide-react';
 import { toast } from 'sonner';
+import { usePoll } from '../hooks/usePoll';
 import { sentimentApi, signalsApi } from '../lib/api-client';
+import config from '../lib/config';
 
 interface SentimentData {
   symbol: string;
@@ -88,6 +90,13 @@ export function Sentiment() {
       loadSignalData();
     }
   }, [symbol]);
+
+  // Poll every 180s (3 minutes)
+  usePoll(() => {
+    if (!symbol) return;
+    loadSentimentData();
+    loadSignalData();
+  }, config.pollIntervalMs, { immediate: false });
 
   const loadSentimentData = async () => {
     if (!symbol) return;

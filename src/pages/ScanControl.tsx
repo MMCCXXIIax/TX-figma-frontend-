@@ -11,8 +11,10 @@ import { Textarea } from '../components/ui/textarea';
 import { Progress } from '../components/ui/progress';
 import { Play, Square, Activity, Clock, AlertTriangle, CheckCircle, Settings } from 'lucide-react';
 import { toast } from 'sonner';
+import { usePoll } from '../hooks/usePoll';
 import { scanApi, dataApi } from '../lib/api-client';
 import socketManager, { ScanUpdate } from '../lib/socket';
+import config from '../lib/config';
 
 interface ScanStatus {
   active: boolean;
@@ -57,6 +59,11 @@ export function ScanControl({ onScanStatusChange }: ScanControlProps) {
       socketManager.disconnect();
     };
   }, []);
+
+  // Poll every 180s (3 minutes) to refresh status/config
+  usePoll(() => {
+    loadScanData();
+  }, config.pollIntervalMs, { immediate: false });
 
   useEffect(() => {
     onScanStatusChange?.(scanStatus?.active || false);

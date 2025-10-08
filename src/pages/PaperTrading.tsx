@@ -12,6 +12,8 @@ import { Progress } from '../components/ui/progress';
 import { DollarSign, TrendingUp, TrendingDown, X, PlusCircle, Activity } from 'lucide-react';
 import { toast } from 'sonner';
 import { paperTradingApi, marketApi, analyticsApi } from '../lib/api-client';
+import { usePoll } from '../hooks/usePoll';
+import config from '../lib/config';
 
 interface PaperTrade {
   id: number;
@@ -68,6 +70,11 @@ export function PaperTrading() {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Poll every 180s to refresh trades/stats/portfolio
+  usePoll(() => {
+    loadData();
+  }, config.pollIntervalMs, { immediate: false });
 
   const loadData = async () => {
     setLoading(true);

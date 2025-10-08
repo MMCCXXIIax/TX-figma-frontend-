@@ -10,6 +10,8 @@ import { CandlestickChart } from '../components/charts/CandlestickChart';
 import { Search, TrendingUp, AlertTriangle, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { marketApi, patternApi } from '../lib/api-client';
+import config from '../lib/config';
+import { usePoll } from '../hooks/usePoll';
 
 interface CandleData {
   timestamp: string;
@@ -54,6 +56,13 @@ export function Charts() {
       loadCurrentPrice();
     }
   }, [symbol, period, interval]);
+
+  // Poll every 180s to refresh chart and price
+  usePoll(() => {
+    if (!symbol) return;
+    loadChartData();
+    loadCurrentPrice();
+  }, config.pollIntervalMs, { immediate: false });
 
   const loadChartData = async () => {
     if (!symbol) return;

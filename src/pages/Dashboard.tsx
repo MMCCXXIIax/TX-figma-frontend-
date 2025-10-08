@@ -5,6 +5,7 @@ import { TrendingUp, TrendingDown, Activity, BarChart3 } from 'lucide-react';
 import { AlertsPanel } from '../components/alerts/AlertsPanel';
 import { marketApi, dataApi, analyticsApi } from '../lib/api-client';
 import socketManager, { PatternAlert } from '../lib/socket';
+import { usePoll } from '../hooks/usePoll';
 
 interface MarketData {
   symbol: string;
@@ -44,6 +45,11 @@ export function Dashboard() {
       socketManager.disconnect();
     };
   }, []);
+
+  // Poll every 180s to refresh dashboard aggregates
+  usePoll(() => {
+    loadDashboardData();
+  }, 180_000, { immediate: false });
 
   const loadDashboardData = async () => {
     try {

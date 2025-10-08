@@ -12,6 +12,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Play, BarChart3, TrendingUp, TrendingDown, Calendar, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 import { backtestApi, patternApi } from '../lib/api-client';
+import { usePoll } from '../hooks/usePoll';
+import config from '../lib/config';
 
 interface BacktestResult {
   strategy_name?: string;
@@ -86,6 +88,11 @@ export function Backtesting() {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Poll every 180s to refresh selectable strategies/patterns
+  usePoll(() => {
+    loadData();
+  }, config.pollIntervalMs, { immediate: false });
 
   const loadData = async () => {
     setLoading(true);
