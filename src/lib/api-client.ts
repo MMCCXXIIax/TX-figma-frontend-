@@ -587,3 +587,7 @@ export const dataApi = {
 // User Profile APIs (not supported by backend) — removed
 
 export default apiClient;
+
+// Status helpers
+export const isBackendAvailable = (): boolean => backendAvailable;
+export const isDemoMode = (): boolean => !!config.demoMode || !backendAvailable;

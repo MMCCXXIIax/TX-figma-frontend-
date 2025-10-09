@@ -37,6 +37,7 @@ class SocketManager {
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000;
+  private demoActive = false;
 
   // Event handlers
   private onConnectionStatusHandlers: ((status: ConnectionStatus) => void)[] = [];
@@ -54,6 +55,7 @@ class SocketManager {
       // In demo mode or when backend is unavailable, simulate connection
       if (config.demoMode) {
         console.log('🎭 Demo mode: Simulating WebSocket connection');
+        this.demoActive = true;
         setTimeout(() => {
           this.simulateDemoEvents();
           resolve();
@@ -96,6 +98,7 @@ class SocketManager {
           this.reconnectAttempts++;
           if (this.reconnectAttempts >= this.maxReconnectAttempts) {
             console.warn('🔌 WebSocket connection failed, switching to demo mode');
+            this.demoActive = true;
             this.simulateDemoEvents();
             resolve(); // Don't reject, just continue in demo mode
           }
@@ -110,11 +113,11 @@ class SocketManager {
           this.onSubscriptionStatusHandlers.forEach(handler => handler(data));
         });
 
-        this.socket.on('scan_update', (data: ScanUpdate) => {
+        this.socket.on('market_scan_update', (data: ScanUpdate) => {
           this.onScanUpdateHandlers.forEach(handler => handler(data));
         });
 
-        this.socket.on('pattern_alert', (data: PatternAlert) => {
+        this.socket.on('new_alert', (data: PatternAlert) => {
           this.onPatternAlertHandlers.forEach(handler => handler(data));
         });
 
@@ -129,6 +132,11 @@ class SocketManager {
       this.socket.disconnect();
       this.socket = null;
     }
+  }
+
+  // Demo mode status
+  isDemoActive(): boolean {
+    return this.demoActive || !!config.demoMode;
   }
 
   // Subscription methods

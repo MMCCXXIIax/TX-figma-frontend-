@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Badge } from '../components/ui/badge';
 import { TrendingUp, TrendingDown, Activity, BarChart3 } from 'lucide-react';
 import { AlertsPanel } from '../components/alerts/AlertsPanel';
-import { marketApi, dataApi, analyticsApi } from '../lib/api-client';
+import { HealthPanel } from '../components/system/HealthPanel';
+import { marketApi, dataApi, analyticsApi, isDemoMode } from '../lib/api-client';
 import socketManager, { PatternAlert } from '../lib/socket';
 import { usePoll } from '../hooks/usePoll';
 
@@ -36,6 +37,7 @@ export function Dashboard() {
   const [realtimeAlerts, setRealtimeAlerts] = useState<PatternAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(false);
+  const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
@@ -100,6 +102,7 @@ export function Dashboard() {
       // Set up event handlers
       socketManager.onConnectionStatus((status) => {
         setIsConnected(status.connected);
+        setIsDemo(isDemoMode() || socketManager.isDemoActive());
       });
 
       socketManager.onPatternAlert((alert) => {
@@ -134,6 +137,9 @@ export function Dashboard() {
               <p className="text-xs text-gray-400 mt-1">{subtitle}</p>
             )}
           </div>
+
+      {/* System Health */}
+      <HealthPanel />
           <div className={`p-3 rounded-lg ${
             trend === 'up' ? 'bg-green-600/20' : 
             trend === 'down' ? 'bg-red-600/20' : 
@@ -188,10 +194,14 @@ export function Dashboard() {
           <span className="text-sm text-gray-400">
             {isConnected ? 'Connected' : 'Disconnected'}
           </span>
+          {isDemo && (
+            <span className="text-xs px-2 py-0.5 rounded bg-yellow-600 text-black">Demo/Fallback</span>
+          )}
         </div>
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats Grid */
+      }
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Patterns"
@@ -280,6 +290,8 @@ export function Dashboard() {
           <AlertsPanel 
             alerts={realtimeAlerts} 
             maxHeight="500px"
+            isConnected={isConnected}
+            isDemo={isDemo}
           />
         </div>
       </div>

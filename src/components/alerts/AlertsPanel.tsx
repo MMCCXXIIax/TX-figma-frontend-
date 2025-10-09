@@ -24,6 +24,9 @@ interface AlertsPanelProps {
   onViewAlert?: (alert: Alert) => void;
   maxHeight?: string;
   showHeader?: boolean;
+  isConnected?: boolean;
+  isDemo?: boolean;
+  ignoreNewWhenDisconnected?: boolean;
 }
 
 export function AlertsPanel({ 
@@ -31,10 +34,14 @@ export function AlertsPanel({
   onDismissAlert, 
   onViewAlert,
   maxHeight = '400px',
-  showHeader = true 
+  showHeader = true,
+  isConnected = true,
+  isDemo = false,
+  ignoreNewWhenDisconnected = true,
 }: AlertsPanelProps) {
   const [activeAlerts, setActiveAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
+  const MAX_ALERTS = 100;
 
   useEffect(() => {
     loadActiveAlerts();
@@ -43,15 +50,34 @@ export function AlertsPanel({
   useEffect(() => {
     // Add new real-time alerts to the list
     if (alerts.length > 0) {
+      if (!isConnected && ignoreNewWhenDisconnected) {
+        return;
+      }
       const newAlerts = alerts.map((alert, index) => ({
         id: Date.now() + index,
         ...alert,
         status: 'active' as const,
       }));
-      
-      setActiveAlerts(prev => [...newAlerts, ...prev]);
+
+      // Dedupe by composite key: symbol|type|timestamp
+      const makeKey = (a: any) => `${a.symbol || ''}|${(a.alert_type || '').toString()}|${a.timestamp || ''}`;
+
+      setActiveAlerts(prev => {
+        const merged = [...newAlerts, ...prev];
+        const seen = new Set<string>();
+        const deduped: Alert[] = [];
+        for (const a of merged) {
+          const k = makeKey(a);
+          if (!seen.has(k)) {
+            seen.add(k);
+            deduped.push(a as Alert);
+          }
+        }
+        // Cap list length
+        return deduped.slice(0, MAX_ALERTS);
+      });
     }
-  }, [alerts]);
+  }, [alerts, isConnected, ignoreNewWhenDisconnected]);
 
   const loadActiveAlerts = async () => {
     try {
@@ -95,6 +121,11 @@ export function AlertsPanel({
     return new Date(timestamp).toLocaleTimeString();
   };
 
+  const truncate = (text: string, max = 80) => {
+    if (!text) return '';
+    return text.length > max ? `${text.slice(0, max)}…` : text;
+  };
+
   if (loading) {
     return (
       <Card className="bg-gray-900 border-gray-700">
@@ -117,7 +148,14 @@ export function AlertsPanel({
       {showHeader && (
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-white">Live Alerts</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-white">Live Alerts</CardTitle>
+              <span className={`h-2 w-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></span>
+              <span className="text-xs text-gray-400">{isConnected ? 'Connected' : 'Disconnected'}</span>
+              {isDemo && (
+                <Badge className="bg-yellow-600">Demo</Badge>
+              )}
+            </div>
             <Badge variant="secondary" className="bg-sky-600 text-white">
               {activeAlerts.length}
             </Badge>
@@ -146,7 +184,9 @@ export function AlertsPanel({
                             {alert.confidence_pct}%
                           </Badge>
                         </div>
-                        <p className="text-sm text-gray-300">{alert.alert_type}</p>
+                        <p className="text-sm text-gray-300" title={alert.alert_type}>
+                          {truncate(alert.alert_type, 100)}
+                        </p>
                         <div className="flex items-center gap-4 text-xs text-gray-400">
                           <span>${(alert.price ?? 0).toFixed(2)}</span>
                           <span>{formatTimestamp(alert.timestamp)}</span>
