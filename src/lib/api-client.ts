@@ -63,6 +63,26 @@ const withFallback = async (apiCall: () => Promise<any>, mockData: any): Promise
   }
 };
 
+// Health & Provider Status APIs
+export const statusApi = {
+  // Basic health
+  getHealth: () =>
+    withFallback(
+      () => apiClient.get('/health'),
+      { status: 'ok', timestamp: new Date().toISOString() }
+    ),
+
+  // Data providers health
+  getProviderHealth: () =>
+    withFallback(
+      () => apiClient.get('/api/provider-health'),
+      {
+        yfinance: { ok: true, latency_ms: 100 },
+        finnhub: { ok: true, latency_ms: 50 },
+      }
+    ),
+};
+
 // Market Data APIs
 export const marketApi = {
   // Get trending or high volume instruments
@@ -75,14 +95,24 @@ export const marketApi = {
   // Get current price for a symbol
   getMarketData: (symbol: string) =>
     withFallback(
-      () => apiClient.get(`/api/market?symbol=${encodeURIComponent(symbol)}`),
+      () => apiClient.get(`/api/market/${encodeURIComponent(symbol)}`),
       mockMarketData.trending.find(item => item.symbol === symbol) || mockMarketData.trending[0]
     ),
 
   // Get OHLCV candles
   getCandles: (symbol: string, period: string = '1d', interval: string = '1h') =>
     withFallback(
-      () => apiClient.get(`/api/candles?symbol=${symbol}&period=${period}&interval=${interval}`),
+      () => apiClient
+        .get(`/api/candles?symbol=${symbol}&period=${period}&interval=${interval}`)
+        .then((res) => {
+          // Backend returns { success, data: { symbol, candles: [...] } }
+          // Normalize to { success, data: Candle[] } to match existing consumers
+          const candles = res?.data?.data?.candles;
+          if (Array.isArray(candles)) {
+            return { ...res, data: { ...res.data, data: candles } } as typeof res;
+          }
+          return res;
+        }),
       mockCandleData
     ),
 };
@@ -180,7 +210,7 @@ export const sentimentApi = {
   // Get sentiment for a symbol
   getSentiment: (symbol: string) =>
     withFallback(
-      () => apiClient.get(`/api/sentiment/?symbol=${encodeURIComponent(symbol)}`),
+      () => apiClient.get(`/api/sentiment/${encodeURIComponent(symbol)}`),
       { ...mockSentiment, symbol }
     ),
 
@@ -252,7 +282,14 @@ export const alertsApi = {
   // Get active alerts
   getActiveAlerts: () =>
     withFallback(
-      () => apiClient.get('/api/get_active_alerts'),
+      () => apiClient.get('/api/get_active_alerts').then((res) => {
+        // Backend returns { success, alerts: [...] }
+        // Normalize to { success, data: [...] } to match consumers
+        if (res?.data && Array.isArray(res.data.alerts)) {
+          return { ...res, data: { ...res.data, data: res.data.alerts } } as typeof res;
+        }
+        return res;
+      }),
       mockAlerts
     ),
 
@@ -297,6 +334,30 @@ export const paperTradingApi = {
         entry_price: trade.price || 100,
         status: 'open',
         created_at: new Date().toISOString()
+      }
+    ),
+
+  // Execute from alert context (aligns with /api/paper-trade/execute-from-alert)
+  executeFromAlert: (payload: {
+    symbol: string,
+    suggested_action: 'BUY' | 'SELL',
+    quantity: number,
+    pattern?: string,
+    confidence?: number,
+    risk_suggestions?: { entry?: number; stop_loss?: number; take_profit?: number }
+  }) =>
+    withFallback(
+      () => apiClient.post('/api/paper-trade/execute-from-alert', payload),
+      {
+        id: Date.now(),
+        symbol: payload.symbol,
+        side: payload.suggested_action,
+        price: payload.risk_suggestions?.entry ?? 100,
+        status: 'open',
+        pnl: 0,
+        pattern: payload.pattern,
+        confidence: payload.confidence,
+        risk_suggestions: payload.risk_suggestions || {},
       }
     ),
 
@@ -468,27 +529,6 @@ export const riskApi = {
       { success: true, settings_updated: Object.keys(settings).length }
     ),
 
-  // Pre-trade risk check
-  preTradeCheck: (data: any) =>
-    withFallback(
-      () => apiClient.post('/api/risk/pre-trade-check', data),
-      {
-        symbol: data.symbol,
-        side: data.side,
-        quantity: data.quantity,
-        price: data.price,
-        risk_score: 35.5,
-        risk_level: 'MEDIUM',
-        warnings: ['Position size exceeds 8% of portfolio'],
-        recommendations: ['Consider reducing position size to 75 shares', 'Set stop loss at $175.00'],
-        position_size_recommended: 75,
-        stop_loss_recommended: 175.00,
-        max_loss_amount: 625.00,
-        portfolio_impact: 7.8,
-        confirmation_required: true,
-        risk_confirmation_token: 'mock_token_' + Date.now()
-      }
-    ),
 
   // Get recommendations
   getRecommendations: (symbol: string) =>
@@ -530,19 +570,6 @@ export const dataApi = {
       }
     ),
 
-  // Get available features
-  getFeatures: () =>
-    withFallback(
-      () => apiClient.get('/api/features'),
-      {
-        pattern_detection: true,
-        sentiment_analysis: true,
-        backtesting: true,
-        paper_trading: true,
-        real_time_scanning: true,
-        risk_management: true
-      }
-    ),
 
   // Get data coverage
   getCoverage: () =>
@@ -557,20 +584,6 @@ export const dataApi = {
     ),
 };
 
-// User Profile APIs
-export const userApi = {
-  // Save user profile
-  saveProfile: (profile: {
-    user_id: string,
-    email?: string,
-    display_name?: string,
-    avatar_url?: string,
-    preferences?: any
-  }) =>
-    withFallback(
-      () => apiClient.post('/api/save-profile', profile),
-      { success: true, profile_saved: profile.user_id }
-    ),
-};
+// User Profile APIs (not supported by backend) — removed
 
 export default apiClient;

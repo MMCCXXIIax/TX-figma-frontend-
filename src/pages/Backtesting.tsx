@@ -138,26 +138,22 @@ export function Backtesting() {
 
     setRunning(true);
     try {
-      const config = {
+      const base = {
         symbol: symbol || undefined,
         start_date: startDate,
         end_date: endDate,
         initial_capital: parseFloat(initialCapital),
         min_confidence: parseFloat(minConfidence),
+      } as any;
+
+      // Use unified endpoint per backend guide
+      const payload = {
+        ...base,
+        ...(testType === 'strategy' ? { strategy_id: selectedStrategy } : {}),
+        ...(testType === 'pattern' ? { pattern_name: selectedPattern } : {}),
       };
 
-      let response;
-      if (testType === 'pattern') {
-        response = await backtestApi.runPatternBacktest({
-          ...config,
-          pattern_name: selectedPattern,
-        });
-      } else {
-        response = await backtestApi.runStrategyBacktest({
-          ...config,
-          strategy_id: selectedStrategy,
-        });
-      }
+      const response = await backtestApi.runBacktest(payload);
 
       if (response.data.success) {
         setResults(response.data.data);

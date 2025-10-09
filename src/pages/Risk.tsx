@@ -75,6 +75,7 @@ export function Risk() {
   const [saving, setSaving] = useState(false);
   const [checking, setChecking] = useState(false);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+  const preTradeSupported = false; // Backend does not expose /api/risk/pre-trade-check
 
   // Risk check form
   const [checkSymbol, setCheckSymbol] = useState('');
@@ -131,34 +132,8 @@ export function Risk() {
   };
 
   const performRiskCheck = async () => {
-    if (!checkSymbol || !checkQuantity || !checkPrice) {
-      toast.error('Please fill in all fields');
-      return;
-    }
-
-    setChecking(true);
-    try {
-      const tradeData = {
-        symbol: checkSymbol.toUpperCase(),
-        side: checkSide,
-        quantity: parseInt(checkQuantity),
-        price: parseFloat(checkPrice),
-      };
-
-      const response = await riskApi.preTradeCheck(tradeData);
-      
-      if (response.data.success) {
-        setRiskCheck(response.data.data);
-        toast.success('Risk check completed');
-      } else {
-        toast.error('Risk check failed');
-      }
-    } catch (error) {
-      console.error('Risk check failed:', error);
-      toast.error('Risk check failed');
-    } finally {
-      setChecking(false);
-    }
+    toast.info('Pre-Trade Risk Check is currently unavailable (not supported by backend).');
+    return;
   };
 
   const loadRecommendations = async () => {
@@ -423,6 +398,12 @@ export function Risk() {
 
         <TabsContent value="check">
           <div className="space-y-6">
+            <Alert className="bg-yellow-900/20 border-yellow-700">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription className="text-white">
+                Pre-Trade Risk Check is not available in the backend at this time. This section is disabled.
+              </AlertDescription>
+            </Alert>
             {/* Risk Check Form */}
             <Card className="bg-gray-900 border-gray-700">
               <CardHeader>
@@ -437,14 +418,15 @@ export function Risk() {
                       value={checkSymbol}
                       onChange={(e) => setCheckSymbol(e.target.value.toUpperCase())}
                       placeholder="AAPL"
-                      className="bg-gray-800 border-gray-600 text-white"
+                      disabled={!preTradeSupported}
+                      className="bg-gray-800 border-gray-600 text-white disabled:opacity-50"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-gray-300">Side</Label>
-                    <Select value={checkSide} onValueChange={(value: 'BUY' | 'SELL') => setCheckSide(value)}>
-                      <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                    <Select value={checkSide} onValueChange={(value: 'BUY' | 'SELL') => setCheckSide(value)} disabled={!preTradeSupported}>
+                      <SelectTrigger className="bg-gray-800 border-gray-600 text-white disabled:opacity-50">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-gray-800 border-gray-600">
@@ -462,7 +444,8 @@ export function Risk() {
                       value={checkQuantity}
                       onChange={(e) => setCheckQuantity(e.target.value)}
                       placeholder="100"
-                      className="bg-gray-800 border-gray-600 text-white"
+                      disabled={!preTradeSupported}
+                      className="bg-gray-800 border-gray-600 text-white disabled:opacity-50"
                     />
                   </div>
 
@@ -475,17 +458,18 @@ export function Risk() {
                       value={checkPrice}
                       onChange={(e) => setCheckPrice(e.target.value)}
                       placeholder="150.00"
-                      className="bg-gray-800 border-gray-600 text-white"
+                      disabled={!preTradeSupported}
+                      className="bg-gray-800 border-gray-600 text-white disabled:opacity-50"
                     />
                   </div>
                 </div>
 
                 <Button
                   onClick={performRiskCheck}
-                  disabled={checking}
+                  disabled={checking || !preTradeSupported}
                   className="w-full bg-sky-600 hover:bg-sky-700"
                 >
-                  {checking ? 'Checking...' : 'Perform Risk Check'}
+                  {checking ? 'Checking...' : 'Perform Risk Check (Unavailable)'}
                 </Button>
               </CardContent>
             </Card>
