@@ -176,8 +176,9 @@ export function Backtesting() {
     }).format(value);
   };
 
-  const formatPercentage = (value: number) => {
-    return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
+  const formatPercentage = (value: number | undefined | null) => {
+    const v = typeof value === 'number' && isFinite(value) ? value : 0;
+    return `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
   };
 
   if (loading) {
@@ -361,7 +362,7 @@ export function Backtesting() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-400">Win Rate</p>
-                    <p className="text-2xl text-white">{results.win_rate.toFixed(1)}%</p>
+                    <p className="text-2xl text-white">{(results.win_rate ?? 0).toFixed(1)}%</p>
                     <p className="text-sm text-gray-400">
                       {results.winning_trades}/{results.total_trades} trades
                     </p>
@@ -376,7 +377,7 @@ export function Backtesting() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-400">Sharpe Ratio</p>
-                    <p className="text-2xl text-white">{results.sharpe_ratio.toFixed(2)}</p>
+                    <p className="text-2xl text-white">{(results.sharpe_ratio ?? 0).toFixed(2)}</p>
                   </div>
                   <TrendingUp className="h-8 w-8 text-sky-400" />
                 </div>
@@ -491,8 +492,8 @@ export function Backtesting() {
                               {trade.side}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-white">${trade.entry_price.toFixed(2)}</TableCell>
-                          <TableCell className="text-white">${trade.exit_price.toFixed(2)}</TableCell>
+                          <TableCell className="text-white">${(trade.entry_price ?? 0).toFixed(2)}</TableCell>
+                          <TableCell className="text-white">${(trade.exit_price ?? 0).toFixed(2)}</TableCell>
                           <TableCell className={trade.pnl >= 0 ? 'text-green-400' : 'text-red-400'}>
                             {formatCurrency(trade.pnl)}
                             <div className="text-xs">

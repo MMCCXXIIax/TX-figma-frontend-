@@ -178,20 +178,21 @@ export function Sentiment() {
     }
   };
 
-  const formatPercentage = (value: number) => {
-    return `${(value * 100).toFixed(1)}%`;
+  const formatPercentage = (value: number | undefined | null) => {
+    const v = typeof value === 'number' && isFinite(value) ? value : 0;
+    return `${(v * 100).toFixed(1)}%`;
   };
 
   const sentimentDistributionData = sentimentData ? [
-    { name: 'News', value: sentimentData.sources.news, fill: '#0ea5e9' },
-    { name: 'Social', value: sentimentData.sources.social, fill: '#10b981' },
-    { name: 'Technical', value: sentimentData.sources.technical, fill: '#f59e0b' },
+    { name: 'News', value: sentimentData.sources?.news ?? 0, fill: '#0ea5e9' },
+    { name: 'Social', value: sentimentData.sources?.social ?? 0, fill: '#10b981' },
+    { name: 'Technical', value: sentimentData.sources?.technical ?? 0, fill: '#f59e0b' },
   ] : [];
 
   const analystRatingsData = sentimentData ? [
-    { name: 'Buy', value: sentimentData.metrics.analyst_ratings.buy, fill: '#10b981' },
-    { name: 'Hold', value: sentimentData.metrics.analyst_ratings.hold, fill: '#f59e0b' },
-    { name: 'Sell', value: sentimentData.metrics.analyst_ratings.sell, fill: '#ef4444' },
+    { name: 'Buy', value: sentimentData.metrics?.analyst_ratings?.buy ?? 0, fill: '#10b981' },
+    { name: 'Hold', value: sentimentData.metrics?.analyst_ratings?.hold ?? 0, fill: '#f59e0b' },
+    { name: 'Sell', value: sentimentData.metrics?.analyst_ratings?.sell ?? 0, fill: '#ef4444' },
   ] : [];
 
   return (
@@ -261,8 +262,8 @@ export function Sentiment() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-400">Overall Sentiment</p>
-                    <p className={`text-2xl ${getSentimentColor(sentimentData.overall_sentiment)}`}>
-                      {sentimentData.overall_sentiment.toFixed(3)}
+                    <p className={`text-2xl ${getSentimentColor(sentimentData.overall_sentiment ?? 0)}`}>
+                      {(sentimentData.overall_sentiment ?? 0).toFixed(3)}
                     </p>
                     <Badge className={getSentimentBadgeColor(sentimentData.sentiment_label)}>
                       {sentimentData.sentiment_label}
@@ -303,8 +304,8 @@ export function Sentiment() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-400">Price Correlation</p>
-                    <p className={`text-2xl ${sentimentData.price_correlation >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {sentimentData.price_correlation.toFixed(3)}
+                    <p className={`text-2xl ${(sentimentData.price_correlation ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {(sentimentData.price_correlation ?? 0).toFixed(3)}
                     </p>
                   </div>
                   <Activity className="h-8 w-8 text-sky-400" />
@@ -426,8 +427,8 @@ export function Sentiment() {
                   <CardContent>
                     <div className="space-y-4">
                       <div className="text-center">
-                        <p className={`text-3xl ${getSentimentColor(sentimentData.sources.news)}`}>
-                          {sentimentData.sources.news.toFixed(3)}
+                        <p className={`text-3xl ${getSentimentColor(sentimentData.sources?.news ?? 0)}`}>
+                          {(sentimentData.sources?.news ?? 0).toFixed(3)}
                         </p>
                       </div>
                       <div className="space-y-2">
@@ -447,8 +448,8 @@ export function Sentiment() {
                   <CardContent>
                     <div className="space-y-4">
                       <div className="text-center">
-                        <p className={`text-3xl ${getSentimentColor(sentimentData.sources.social)}`}>
-                          {sentimentData.sources.social.toFixed(3)}
+                        <p className={`text-3xl ${getSentimentColor(sentimentData.sources?.social ?? 0)}`}>
+                          {(sentimentData.sources?.social ?? 0).toFixed(3)}
                         </p>
                       </div>
                       <div className="space-y-2">
@@ -458,7 +459,7 @@ export function Sentiment() {
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-400">Volume Buzz:</span>
-                          <span className="text-white">{formatPercentage(sentimentData.metrics.volume_buzz)}</span>
+                          <span className="text-white">{formatPercentage(sentimentData.metrics?.volume_buzz)}</span>
                         </div>
                       </div>
                     </div>
@@ -472,14 +473,14 @@ export function Sentiment() {
                   <CardContent>
                     <div className="space-y-4">
                       <div className="text-center">
-                        <p className={`text-3xl ${getSentimentColor(sentimentData.sources.technical)}`}>
-                          {sentimentData.sources.technical.toFixed(3)}
+                        <p className={`text-3xl ${getSentimentColor(sentimentData.sources?.technical ?? 0)}`}>
+                          {(sentimentData.sources?.technical ?? 0).toFixed(3)}
                         </p>
                       </div>
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-400">Correlation:</span>
-                          <span className="text-white">{sentimentData.price_correlation.toFixed(3)}</span>
+                          <span className="text-white">{(sentimentData.price_correlation ?? 0).toFixed(3)}</span>
                         </div>
                       </div>
                     </div>

@@ -148,7 +148,7 @@ export function AlertsPanel({
                         </div>
                         <p className="text-sm text-gray-300">{alert.alert_type}</p>
                         <div className="flex items-center gap-4 text-xs text-gray-400">
-                          <span>${alert.price.toFixed(2)}</span>
+                          <span>${(alert.price ?? 0).toFixed(2)}</span>
                           <span>{formatTimestamp(alert.timestamp)}</span>
                         </div>
                       </div>

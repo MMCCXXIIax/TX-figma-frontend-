@@ -143,9 +143,9 @@ export function Charts() {
         <h1 className="text-white text-2xl">Charts & Pattern Detection</h1>
         {currentPrice && (
           <div className="text-right">
-            <div className="text-white text-xl">${currentPrice.price.toFixed(2)}</div>
-            <div className={`text-sm ${currentPrice.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {currentPrice.change >= 0 ? '+' : ''}${currentPrice.change.toFixed(2)} ({currentPrice.change_pct.toFixed(2)}%)
+            <div className="text-white text-xl">${(currentPrice.price ?? 0).toFixed(2)}</div>
+            <div className={`text-sm ${(currentPrice.change ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              {(currentPrice.change ?? 0) >= 0 ? '+' : ''}${(currentPrice.change ?? 0).toFixed(2)} ({(currentPrice.change_pct ?? 0).toFixed(2)}%)
             </div>
           </div>
         )}

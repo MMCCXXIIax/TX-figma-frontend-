@@ -3,14 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+// Removed Select imports (no longer used)
 import { Switch } from '../components/ui/switch';
 import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { Separator } from '../components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Shield, AlertTriangle, TrendingUp, TrendingDown, DollarSign, Target, Search } from 'lucide-react';
+import { Shield, AlertTriangle, TrendingUp, TrendingDown, Target, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { riskApi } from '../lib/api-client';
 import { usePoll } from '../hooks/usePoll';
@@ -29,22 +29,6 @@ interface RiskSettings {
   correlation_threshold: number;
 }
 
-interface RiskCheck {
-  symbol: string;
-  side: 'BUY' | 'SELL';
-  quantity: number;
-  price: number;
-  risk_score: number;
-  risk_level: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-  warnings: string[];
-  recommendations: string[];
-  position_size_recommended: number;
-  stop_loss_recommended: number;
-  max_loss_amount: number;
-  portfolio_impact: number;
-  confirmation_required: boolean;
-  risk_confirmation_token?: string;
-}
 
 interface Recommendation {
   symbol: string;
@@ -70,18 +54,10 @@ interface Recommendation {
 export function Risk() {
   const [riskSettings, setRiskSettings] = useState<RiskSettings | null>(null);
   const [recommendations, setRecommendations] = useState<Recommendation | null>(null);
-  const [riskCheck, setRiskCheck] = useState<RiskCheck | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [checking, setChecking] = useState(false);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
-  const preTradeSupported = false; // Backend does not expose /api/risk/pre-trade-check
-
-  // Risk check form
-  const [checkSymbol, setCheckSymbol] = useState('');
-  const [checkSide, setCheckSide] = useState<'BUY' | 'SELL'>('BUY');
-  const [checkQuantity, setCheckQuantity] = useState('');
-  const [checkPrice, setCheckPrice] = useState('');
+  // Pre-trade check is unavailable; related state removed
 
   // Recommendations form
   const [recommendSymbol, setRecommendSymbol] = useState('');
@@ -131,10 +107,7 @@ export function Risk() {
     }
   };
 
-  const performRiskCheck = async () => {
-    toast.info('Pre-Trade Risk Check is currently unavailable (not supported by backend).');
-    return;
-  };
+  // Pre-Trade Check removed
 
   const loadRecommendations = async () => {
     if (!recommendSymbol) {
@@ -160,15 +133,7 @@ export function Risk() {
     }
   };
 
-  const getRiskLevelColor = (level: string) => {
-    switch (level) {
-      case 'LOW': return 'bg-green-600';
-      case 'MEDIUM': return 'bg-yellow-600';
-      case 'HIGH': return 'bg-orange-600';
-      case 'CRITICAL': return 'bg-red-600';
-      default: return 'bg-gray-600';
-    }
-  };
+  // Removed unused getRiskLevelColor helper
 
   const getRiskScoreColor = (score: number) => {
     if (score <= 25) return 'text-green-400';
@@ -343,7 +308,7 @@ export function Risk() {
                         <Switch
                           id="require-confirmation"
                           checked={riskSettings.require_confirmation}
-                          onCheckedChange={(checked) => setRiskSettings({
+                          onCheckedChange={(checked: boolean) => setRiskSettings({
                             ...riskSettings,
                             require_confirmation: checked
                           })}
@@ -357,7 +322,7 @@ export function Risk() {
                         <Switch
                           id="auto-stop-loss"
                           checked={riskSettings.enable_auto_stop_loss}
-                          onCheckedChange={(checked) => setRiskSettings({
+                          onCheckedChange={(checked: boolean) => setRiskSettings({
                             ...riskSettings,
                             enable_auto_stop_loss: checked
                           })}
@@ -371,7 +336,7 @@ export function Risk() {
                         <Switch
                           id="position-sizing"
                           checked={riskSettings.enable_position_sizing}
-                          onCheckedChange={(checked) => setRiskSettings({
+                          onCheckedChange={(checked: boolean) => setRiskSettings({
                             ...riskSettings,
                             enable_position_sizing: checked
                           })}
@@ -401,150 +366,9 @@ export function Risk() {
             <Alert className="bg-yellow-900/20 border-yellow-700">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription className="text-white">
-                Pre-Trade Risk Check is not available in the backend at this time. This section is disabled.
+                Pre-Trade Risk Check is not available in the backend at this time.
               </AlertDescription>
             </Alert>
-            {/* Risk Check Form */}
-            <Card className="bg-gray-900 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white">Pre-Trade Risk Check</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="check-symbol" className="text-gray-300">Symbol</Label>
-                    <Input
-                      id="check-symbol"
-                      value={checkSymbol}
-                      onChange={(e) => setCheckSymbol(e.target.value.toUpperCase())}
-                      placeholder="AAPL"
-                      disabled={!preTradeSupported}
-                      className="bg-gray-800 border-gray-600 text-white disabled:opacity-50"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-gray-300">Side</Label>
-                    <Select value={checkSide} onValueChange={(value: 'BUY' | 'SELL') => setCheckSide(value)} disabled={!preTradeSupported}>
-                      <SelectTrigger className="bg-gray-800 border-gray-600 text-white disabled:opacity-50">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-600">
-                        <SelectItem value="BUY">BUY</SelectItem>
-                        <SelectItem value="SELL">SELL</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="check-quantity" className="text-gray-300">Quantity</Label>
-                    <Input
-                      id="check-quantity"
-                      type="number"
-                      value={checkQuantity}
-                      onChange={(e) => setCheckQuantity(e.target.value)}
-                      placeholder="100"
-                      disabled={!preTradeSupported}
-                      className="bg-gray-800 border-gray-600 text-white disabled:opacity-50"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="check-price" className="text-gray-300">Price</Label>
-                    <Input
-                      id="check-price"
-                      type="number"
-                      step="0.01"
-                      value={checkPrice}
-                      onChange={(e) => setCheckPrice(e.target.value)}
-                      placeholder="150.00"
-                      disabled={!preTradeSupported}
-                      className="bg-gray-800 border-gray-600 text-white disabled:opacity-50"
-                    />
-                  </div>
-                </div>
-
-                <Button
-                  onClick={performRiskCheck}
-                  disabled={checking || !preTradeSupported}
-                  className="w-full bg-sky-600 hover:bg-sky-700"
-                >
-                  {checking ? 'Checking...' : 'Perform Risk Check (Unavailable)'}
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Risk Check Results */}
-            {riskCheck && (
-              <Card className="bg-gray-900 border-gray-700">
-                <CardHeader>
-                  <CardTitle className="text-white">Risk Assessment Results</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Risk Score */}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-400">Risk Score</p>
-                      <p className={`text-3xl ${getRiskScoreColor(riskCheck.risk_score)}`}>
-                        {riskCheck.risk_score.toFixed(1)}
-                      </p>
-                    </div>
-                    <Badge className={getRiskLevelColor(riskCheck.risk_level)}>
-                      {riskCheck.risk_level} RISK
-                    </Badge>
-                  </div>
-
-                  <Progress value={riskCheck.risk_score} className="mt-2" />
-
-                  {/* Risk Metrics */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-400">Recommended Position Size</p>
-                      <p className="text-lg text-white">{riskCheck.position_size_recommended} shares</p>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-400">Recommended Stop Loss</p>
-                      <p className="text-lg text-white">${riskCheck.stop_loss_recommended.toFixed(2)}</p>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-400">Max Loss Amount</p>
-                      <p className="text-lg text-red-400">${riskCheck.max_loss_amount.toFixed(2)}</p>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-400">Portfolio Impact</p>
-                      <p className="text-lg text-white">{riskCheck.portfolio_impact.toFixed(2)}%</p>
-                    </div>
-                  </div>
-
-                  {/* Warnings */}
-                  {riskCheck.warnings.length > 0 && (
-                    <Alert className="bg-red-900/20 border-red-700">
-                      <AlertTriangle className="h-4 w-4" />
-                      <AlertDescription className="text-white">
-                        <p className="mb-2">Risk Warnings:</p>
-                        <ul className="space-y-1">
-                          {riskCheck.warnings.map((warning, index) => (
-                            <li key={index}>• {warning}</li>
-                          ))}
-                        </ul>
-                      </AlertDescription>
-                    </Alert>
-                  )}
-
-                  {/* Recommendations */}
-                  {riskCheck.recommendations.length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-400">Recommendations:</p>
-                      <ul className="space-y-1 text-sm text-gray-300">
-                        {riskCheck.recommendations.map((rec, index) => (
-                          <li key={index}>• {rec}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
           </div>
         </TabsContent>
 
@@ -602,8 +426,8 @@ export function Risk() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm text-gray-400">Confidence</p>
-                          <p className="text-2xl text-white">{recommendations.confidence}%</p>
-                          <Progress value={recommendations.confidence} className="mt-2 w-24" />
+                          <p className="text-2xl text-white">{(recommendations.confidence ?? 0)}%</p>
+                          <Progress value={recommendations.confidence ?? 0} className="mt-2 w-24" />
                         </div>
                         <Target className="h-8 w-8 text-sky-400" />
                       </div>
@@ -611,7 +435,7 @@ export function Risk() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm text-gray-400">Target Price</p>
-                          <p className="text-2xl text-green-400">${recommendations.target_price.toFixed(2)}</p>
+                          <p className="text-2xl text-green-400">${(recommendations.target_price ?? 0).toFixed(2)}</p>
                         </div>
                         <TrendingUp className="h-8 w-8 text-green-400" />
                       </div>
@@ -619,7 +443,7 @@ export function Risk() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm text-gray-400">Stop Loss</p>
-                          <p className="text-2xl text-red-400">${recommendations.stop_loss.toFixed(2)}</p>
+                          <p className="text-2xl text-red-400">${(recommendations.stop_loss ?? 0).toFixed(2)}</p>
                         </div>
                         <TrendingDown className="h-8 w-8 text-red-400" />
                       </div>
@@ -637,8 +461,8 @@ export function Risk() {
                       
                       <div className="flex items-center gap-4">
                         <p className="text-sm text-gray-400">Risk Score:</p>
-                        <p className={`text-lg ${getRiskScoreColor(recommendations.risk_assessment.risk_score)}`}>
-                          {recommendations.risk_assessment.risk_score.toFixed(1)}
+                        <p className={`text-lg ${getRiskScoreColor(recommendations.risk_assessment?.risk_score ?? 0)}`}>
+                          {(recommendations.risk_assessment?.risk_score ?? 0).toFixed(1)}
                         </p>
                       </div>
 
@@ -664,19 +488,18 @@ export function Risk() {
                     {/* Position Sizing */}
                     <div className="space-y-4">
                       <h3 className="text-lg text-white">Position Sizing</h3>
-                      
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="space-y-2">
                           <p className="text-sm text-gray-400">Recommended Size</p>
-                          <p className="text-lg text-white">{recommendations.position_sizing.recommended_size} shares</p>
+                          <p className="text-lg text-white">{recommendations.position_sizing?.recommended_size ?? 0} shares</p>
                         </div>
                         <div className="space-y-2">
                           <p className="text-sm text-gray-400">Maximum Size</p>
-                          <p className="text-lg text-white">{recommendations.position_sizing.max_size} shares</p>
+                          <p className="text-lg text-white">{recommendations.position_sizing?.max_size != null ? recommendations.position_sizing.max_size.toFixed(0) : 'N/A'} shares</p>
                         </div>
                         <div className="space-y-2">
                           <p className="text-sm text-gray-400">Kelly Criterion</p>
-                          <p className="text-lg text-white">{(recommendations.position_sizing.kelly_criterion * 100).toFixed(1)}%</p>
+                          <p className="text-lg text-white">{recommendations.position_sizing?.kelly_criterion != null ? ((recommendations.position_sizing.kelly_criterion ?? 0) * 100).toFixed(1) : 'N/A'}%</p>
                         </div>
                       </div>
                     </div>
