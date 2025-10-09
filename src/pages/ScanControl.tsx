@@ -12,7 +12,7 @@ import { Progress } from '../components/ui/progress';
 import { Play, Square, Activity, Clock, AlertTriangle, CheckCircle, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePoll } from '../hooks/usePoll';
-import { scanApi, dataApi } from '../lib/api-client';
+import { scanApi, dataApi, isDemoMode } from '../lib/api-client';
 import socketManager, { ScanUpdate } from '../lib/socket';
 import config from '../lib/config';
 
@@ -50,6 +50,7 @@ export function ScanControl({ onScanStatusChange }: ScanControlProps) {
   const [startingStoppping, setStartingStopping] = useState(false);
   const [realtimeScanUpdates, setRealtimeScanUpdates] = useState<ScanUpdate[]>([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
     loadScanData();
@@ -100,9 +101,12 @@ export function ScanControl({ onScanStatusChange }: ScanControlProps) {
       
       socketManager.onConnectionStatus((status) => {
         setIsConnected(status.connected);
+        setIsDemo(isDemoMode() || socketManager.isDemoActive());
       });
 
       socketManager.onScanUpdate((update) => {
+        // Ignore updates when disconnected to avoid confusing UX
+        if (!socketManager.isConnected()) return;
         setRealtimeScanUpdates(prev => [update, ...prev.slice(0, 19)]); // Keep last 20 updates
       });
 
@@ -210,6 +214,9 @@ export function ScanControl({ onScanStatusChange }: ScanControlProps) {
               {isConnected ? 'Connected' : 'Disconnected'}
             </span>
           </div>
+          {isDemo && (
+            <span className="text-xs px-2 py-0.5 rounded bg-yellow-600 text-black">Demo/Fallback</span>
+          )}
           
           {/* Scan Status */}
           {scanStatus && (

@@ -38,6 +38,7 @@ class SocketManager {
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000;
   private demoActive = false;
+  private consumers = 0; // number of active pages/components using the socket
 
   // Event handlers
   private onConnectionStatusHandlers: ((status: ConnectionStatus) => void)[] = [];
@@ -47,7 +48,16 @@ class SocketManager {
 
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (this.socket?.connected) {
+      // Increase consumer count first
+      this.consumers++;
+
+      // If already connected or in demo mode with simulation running, resolve immediately
+      if (this.socket?.connected || this.demoActive || config.demoMode) {
+        // If demo mode flag is set and no socket is needed, ensure demo is active
+        if (config.demoMode && !this.demoActive) {
+          this.demoActive = true;
+          this.simulateDemoEvents();
+        }
         resolve();
         return;
       }
@@ -122,15 +132,22 @@ class SocketManager {
         });
 
       } catch (error) {
+        // On failure, decrement consumer since connect didn't succeed
+        this.consumers = Math.max(0, this.consumers - 1);
         reject(error);
       }
     });
   }
 
   disconnect(): void {
-    if (this.socket) {
-      this.socket.disconnect();
-      this.socket = null;
+    // Decrease consumer count; only fully disconnect when no consumers remain
+    this.consumers = Math.max(0, this.consumers - 1);
+    if (this.consumers === 0) {
+      if (this.socket) {
+        this.socket.disconnect();
+        this.socket = null;
+      }
+      // Keep demoActive state as-is; do not auto-clear so UI can still indicate mode
     }
   }
 
