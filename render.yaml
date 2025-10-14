@@ -1,14 +1,17 @@
 services:
   - type: web
-    name: tx-frontend-web
-    runtime: node
+    name: tx-figma-frontend
+    runtime: static
     plan: free
     region: oregon
-    repo: https://github.com/your-org/your-repo
     branch: main
     autoDeploy: true
-    buildCommand: npm ci && npm run build
-    startCommand: npx serve -s dist -l $PORT
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
       - key: NODE_VERSION
         value: 20
