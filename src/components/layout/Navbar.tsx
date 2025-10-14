@@ -12,7 +12,7 @@ import {
   TestTube, 
   Brain,
   Shield,
-  Settings
+  Sparkles
 } from 'lucide-react';
 
 const navigation = [
@@ -20,6 +20,7 @@ const navigation = [
   { name: 'Charts', href: '/charts', icon: BarChart3 },
   { name: 'Paper Trading', href: '/paper-trading', icon: DollarSign },
   { name: 'Scan Control', href: '/scan-control', icon: Activity },
+  { name: 'AI Insights', href: '/ai-insights', icon: Sparkles },
   { name: 'Backtesting', href: '/backtesting', icon: TestTube },
   { name: 'Sentiment', href: '/sentiment', icon: Brain },
   { name: 'Risk & Recommendations', href: '/risk', icon: Shield },

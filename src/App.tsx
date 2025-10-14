@@ -11,6 +11,7 @@ import { ScanControl } from './pages/ScanControl';
 import { Backtesting } from './pages/Backtesting';
 import { Sentiment } from './pages/Sentiment';
 import { Risk } from './pages/Risk';
+import { AIInsights } from './pages/AIInsights';
 import { OnboardingModal } from './components/modals/OnboardingModal';
 import { Toaster } from './components/ui/sonner';
 import socketManager from './lib/socket';
@@ -95,6 +96,7 @@ export default function App() {
             <Route path="/backtesting" element={<Backtesting />} />
             <Route path="/sentiment" element={<Sentiment />} />
             <Route path="/risk" element={<Risk />} />
+            <Route path="/ai-insights" element={<AIInsights />} />
             {/* Catch-all route to handle unknown paths */}
             <Route path="*" element={<Dashboard />} />
           </Routes>
