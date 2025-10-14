@@ -585,6 +585,8 @@ export const dataApi = {
 };
 
 // Enhanced AI/ML APIs
+// Backend Base URL: https://tx-predictive-intelligence.onrender.com
+// These endpoints integrate with the live backend provided by the backend team
 export const enhancedAIApi = {
   // Get pattern heatmap (multi-timeframe confidence matrix)
   getPatternHeatmap: (symbol: string) =>
@@ -611,9 +613,13 @@ export const enhancedAIApi = {
     ),
 
   // Get AI reasoning explanation
-  getAIReasoning: (data: { symbol: string; pattern_name: string; alert_id?: number }) =>
+  getAIReasoning: (data: { symbol: string; pattern_name?: string; pattern?: string; alert_id?: number }) =>
     withFallback(
-      () => apiClient.post('/api/explain/reasoning', data),
+      () => apiClient.post('/api/explain/reasoning', { 
+        symbol: data.symbol, 
+        pattern: data.pattern_name || data.pattern,
+        alert_id: data.alert_id 
+      }),
       {
         symbol: data.symbol,
         pattern: data.pattern_name,
@@ -666,10 +672,10 @@ export const enhancedAIApi = {
       }
     ),
 
-  // Get ML learning status
+  // Get ML learning status (using online-status endpoint from backend)
   getMLLearningStatus: () =>
     withFallback(
-      () => apiClient.get('/api/ml/learning-status'),
+      () => apiClient.get('/api/ml/online-status'),
       {
         is_learning: true,
         recent_updates: [
@@ -696,10 +702,10 @@ export const enhancedAIApi = {
       }
     ),
 
-  // Get model performance metrics
+  // Get model performance metrics (using models endpoint from backend)
   getModelPerformance: () =>
     withFallback(
-      () => apiClient.get('/api/ml/model-performance'),
+      () => apiClient.get('/api/ml/models'),
       {
         models: [
           {
@@ -768,10 +774,10 @@ export const enhancedAIApi = {
       }
     ),
 
-  // Get predictive forecast
+  // Get predictive forecast (backend uses 'timeframe' parameter)
   getPredictiveForecast: (period: string = '7d') =>
     withFallback(
-      () => apiClient.get(`/api/analytics/forecast?period=${period}`),
+      () => apiClient.get(`/api/analytics/forecast?timeframe=${period}`),
       {
         period,
         predictions: [
