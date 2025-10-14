@@ -5,6 +5,7 @@
 
   export default defineConfig({
     plugins: [react()],
+    publicDir: 'public', // Explicitly set public directory
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       alias: {
