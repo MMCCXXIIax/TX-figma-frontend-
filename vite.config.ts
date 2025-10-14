@@ -51,7 +51,7 @@
     target: 'esnext',
     outDir: 'dist',
     sourcemap: false,
-    minify: 'terser',
+    minify: 'esbuild', // Changed from 'terser' to 'esbuild' (built into Vite, faster)
     rollupOptions: {
       output: {
         manualChunks: {
